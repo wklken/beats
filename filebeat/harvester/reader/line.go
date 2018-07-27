@@ -121,6 +121,26 @@ func (l *Line) advance() error {
 
 		// Check if buffer has newLine character
 		idx = l.inBuffer.IndexFrom(l.inOffset, l.nl)
+
+		// assume the 23465 is the maxLineBytes
+		if l.inBuffer.Len() >= 23465 {
+			// if not reach the \n, truncate all
+			if idx == -1 {
+				l.inBuffer.Advance(l.inBuffer.Len())
+				l.inBuffer.Reset()
+			} else {
+				// if reach the \n, keep buffersize
+				truncatedLen := l.inBuffer.Len() - l.bufferSize
+
+				l.inBuffer.Advance(truncatedLen)
+				l.inBuffer.Reset()
+
+				// update the ids
+				idx = idx - truncatedLen
+				// update the checkpoint offset
+				l.byteCount += truncatedLen
+			}
+		}
 	}
 
 	// found encoded byte sequence for '\n' in buffer
