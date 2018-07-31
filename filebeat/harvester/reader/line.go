@@ -129,12 +129,22 @@ func (l *Line) advance() error {
 			if idx == -1 {
 				l.inBuffer.Advance(l.inBuffer.Len())
 				l.inBuffer.Reset()
+
+				// caliculate by idx+1-truncatedLen, compare to 0, will be 0
+				l.inOffset = 0
 			} else {
 				// if reach the \n, keep buffersize
 				truncatedLen := l.inBuffer.Len() - l.bufferSize
 
 				l.inBuffer.Advance(truncatedLen)
 				l.inBuffer.Reset()
+
+				// NOTE: if i un comment this, will case  Drop batch by retryer? why?
+				// l.inOffset = idx + 1 - truncatedLen
+				// if l.inOffset < 0 {
+				// // fix inOffset if '\n' has encoding > 8bits + fill line has been decoded
+				// l.inOffset = 0
+				// }
 
 				// update the ids
 				idx = idx - truncatedLen
